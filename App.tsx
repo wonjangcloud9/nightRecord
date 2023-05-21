@@ -38,6 +38,7 @@ function App(): JSX.Element {
       );
       if (res) {
         const url = res.result.outputURL;
+        console.log(url);
       }
     }, 3000);
   };
@@ -70,20 +71,55 @@ function App(): JSX.Element {
     RNFS.readDir(RNFS.DocumentDirectoryPath)
       .then(result => {
         console.log('GOT RESULT', result);
+
+        console.log(RNFS.DocumentDirectoryPath);
         return Promise.all([RNFS.stat(result[0].path), result[0].path]);
       })
       .then(statResult => {
+        console.log('====================================');
+        console.log(statResult);
+        console.log('====================================');
+        __savePicture(
+          'data/user/0/Android/data/com.test/files/ReactNativeRecordScreen/HD2023-05-22-01-02-46.mp4',
+        );
         if (statResult[0].isFile()) {
-          return RNFS.readFile(statResult[1], 'utf8');
+          return RNFS.readFile(statResult[0]['path'], 'utf8');
         }
         return 'no file';
       })
       .then(contents => {
         setContent(contents);
+        console.log('====================================');
         console.log(contents);
+        console.log('====================================');
       })
       .catch(err => {
         console.log(err.message, err.code);
+      });
+  };
+
+  const __savePicture = async (video: any) => {
+    const file = new FormData();
+    file.append('file', {
+      uri: video,
+      type: 'video/mp4',
+      name: `test2.mp4`,
+    });
+
+    await fetch('http://115.165.86.157:8000/upload/video', {
+      method: 'POST',
+      body: file,
+    })
+      .then(response => response.json())
+      .then(async responseJson => {
+        const url = responseJson.url;
+        console.log(url);
+
+        // await ocrUplod(url);
+      })
+      .catch(err => {
+        console.log('Error');
+        console.log(err);
       });
   };
 
